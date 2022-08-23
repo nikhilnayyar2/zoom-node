@@ -1,0 +1,19 @@
+{
+  "name": "zoom-node",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "16.0.1",
+    "express": "4.18.1",
+    "node-fetch": "3.2.10",
+    "nodemon": "2.0.19"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
