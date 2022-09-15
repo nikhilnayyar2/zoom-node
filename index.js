@@ -10,13 +10,15 @@ const { clientID, clientSecret, redirect_uri, serverPort: port } = process.env;
 
 const app = express();
 
+/** create PKCE verifier & challenge */
 const verifier = base64url(crypto.pseudoRandomBytes(32));
 const challenge = base64url(
   crypto.createHash("sha256").update(verifier).digest()
 );
 const challengeMethod = "S256";
+/** */
 
-app.get("/", async (req, res) => {
+app.get("/oauth", async (req, res) => {
   const code = req.query.code;
   // Step 1:
   // Check if the code parameter is in the url
