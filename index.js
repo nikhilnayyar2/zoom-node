@@ -10,13 +10,73 @@ const { clientID, clientSecret, redirect_uri, serverPort: port } = process.env;
 
 const app = express();
 
-/** create PKCE verifier & challenge */
+// create PKCE verifier & challenge
 const verifier = base64url(crypto.pseudoRandomBytes(32));
 const challenge = base64url(
   crypto.createHash("sha256").update(verifier).digest()
 );
 const challengeMethod = "S256";
-/** */
+
+// outh tokens
+let accessToken = null,
+  refreshToken = null;
+
+// functions
+
+function setTokens(data) {
+  console.log(data);
+
+  accessToken = data.access_token;
+  refreshToken = data.refresh_token;
+}
+
+async function refreshTokenF() {
+  const response = await nodeFetch("https://zoom.us/oauth/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from(
+        `${clientID}:${clientSecret}`
+      ).toString("base64")}`,
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+  });
+
+  if (response.status === 200) {
+    setTokens(await response.json());
+    return true;
+  }
+  return false;
+}
+function fetchUserDetails() {
+  return nodeFetch("https://api.zoom.us/v2/users/me", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+}
+
+/** @return {Promise<Response>} */
+async function fetchUserDetailsWithRetry(/** @type {number} */ retryCount) {
+  const response = await fetchUserDetails();
+  
+  if (response.status === 200) return response;
+
+  if (retryCount && (await refreshTokenF()))
+    return await fetchUserDetailsWithRetry(--retryCount);
+
+  return response;
+}
+// routes
+
+app.get("/user", async (req, res) => {
+  const response = await fetchUserDetailsWithRetry(1)
+  return res.json( response.status === 200 ? await response.json() : null )
+});
 
 app.get("/oauth", async (req, res) => {
   const code = req.query.code;
@@ -44,8 +104,11 @@ app.get("/oauth", async (req, res) => {
     });
 
     const data = await response.json();
-    console.log(data);
-    return res.json({ access_token: data.access_token });
+
+    // save tokens
+    setTokens(data);
+
+    return res.send("Done");
   }
 
   // Step 2:
