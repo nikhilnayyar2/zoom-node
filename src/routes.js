@@ -69,8 +69,8 @@ router.get("/create-meeting", async (req, res) => {
   // create meeting and save meeting data
   const response1 = await fetchWithRetry(createMeeting, 1);
   if (response1.ok) {
-    const { id, password, join_url } = await response1.json();
-    setMeetingData({ id, password, join_url }, id);
+    const { id, password } = await response1.json();
+    setMeetingData({ id, password }, id);
     return sendMeetingData();
   }
 
