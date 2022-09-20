@@ -1,5 +1,6 @@
 import { ZoomMtg } from "@zoomus/websdk";
 import { useEffect } from "react";
+import "./ClientView.css"
 
 ZoomMtg.setZoomJSLib("https://source.zoom.us/2.7.0/lib", "/av");
 
