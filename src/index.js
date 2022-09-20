@@ -1,9 +1,11 @@
 import express from "express";
-import { router } from "./src/routes";
-import { port } from "./src/variables";
+import cors from "cors";
+import { router } from "./routes";
+import { port } from "./variables";
 
 const app = express();
 
+app.use(cors())
 app.use(express.text());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

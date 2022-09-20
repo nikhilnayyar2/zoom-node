@@ -17,7 +17,7 @@ export async function fetchWithRetry(
 ) {
   const response = await api(...params);
 
-  if (isOkResponseStatus(response.status)) return response;
+  if (response.ok) return response;
 
   if (retryCount && (await refreshToken())) return await fetchWithRetry(api, --retryCount, ...params);
 
@@ -53,6 +53,4 @@ export function setMeetingData(data, meetingNumber) {
   } else meetingData.data = null;
 }
 
-export const isOkResponseStatus = (status) => status >= 200 && status < 300;
-
-export const sendErrorResp = (res) => res.send({ status: false });
+export const sendRespStatus = (res, status, data) => res.status(status ? 200 : 500).send({ status, data });

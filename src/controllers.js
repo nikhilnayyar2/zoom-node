@@ -1,5 +1,5 @@
 import nodeFetch from "node-fetch";
-import { isOkResponseStatus, setTokens } from "./handlers";
+import { setTokens } from "./handlers";
 import { clientID, clientSecret, redirectUri, tokens, verifier } from "./variables";
 
 export async function refreshToken() {
@@ -15,7 +15,7 @@ export async function refreshToken() {
     }),
   });
 
-  if (isOkResponseStatus(response.status)) {
+  if (response.ok) {
     setTokens(await response.json());
     return true;
   }
@@ -46,7 +46,7 @@ export async function zoomAccessToken(code) {
     }),
   });
 
-  if (isOkResponseStatus(response.status)) return await response.json();
+  if (response.ok) return await response.json();
   else return null;
 }
 
@@ -73,5 +73,27 @@ export function createMeeting() {
       "Content-Type": "application/json",
       Authorization: "Bearer " + tokens.accessToken,
     },
+  });
+}
+
+export function getUserZak() {
+  return nodeFetch(`https://api.zoom.us/v2/users/me/token?type=zak`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + tokens.accessToken,
+    },
+  });
+}
+
+export function endMeeting(meetingId) {
+  return nodeFetch(`https://api.zoom.us/v2/meetings/${meetingId}/status`, {
+    method: "PUT",
+    headers: {
+      Authorization: "Bearer " + tokens.accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action: "end",
+    }),
   });
 }
