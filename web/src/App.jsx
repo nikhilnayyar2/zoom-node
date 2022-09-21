@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import ClientView from "./ClientView";
-import ComponentView from "./ComponentView";
+// import ComponentView from "./ComponentView";
 import { checkOauthSetup, joinMeeting } from "./handler";
 import { Routes, Route } from "react-router-dom";
 import ZoomMeetEnd from "./ZoomMeetEnd";
@@ -13,9 +13,11 @@ const isOauthSetup = async () => {
 function App() {
   const [loading, setLoading] = useState(true);
   const [meetingData, setMeetingData] = useState(null);
+  const [host, setHost] = useState(false);
 
   const joinMeet = useCallback(async (host) => {
     setMeetingData(await joinMeeting(host));
+    setHost(host)
   }, []);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ function App() {
               </div>
             )}
             {/* <ComponentView meetingData={meetingData} /> */}
-            <ClientView meetingData={meetingData} />
+            <ClientView meetingData={meetingData} host={host} />
           </div>
         }
       />

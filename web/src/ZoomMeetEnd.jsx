@@ -6,7 +6,8 @@ export default function ZoomMeetEnd() {
   const [meetEnded, setMeetEnded] = useState(false);
 
   useEffect(() => {
-    !meetEnded && endMeeting().then(() => setMeetEnded(true));
+    const host = new URLSearchParams(window.location.search).get("host");
+    host === "true" && !meetEnded && endMeeting().then(() => setMeetEnded(true));
   }, [meetEnded]);
 
   return <div>{meetEnded ? "Meet ended!" : "ending..."}</div>;
