@@ -59,8 +59,22 @@ router.get("/create-meeting", async (req, res) => {
   const response = await fetchWithRetry(fetchLiveMeetings, 1);
   if (response.ok) {
     const { meetings } = await response.json();
+
+    if (meetings.length) {
+      // if zoom meeting is going on and there is no meetingData on server then the zoom meeting is regarded as previous and it has not ended
+      // so end it so that a user can host only one zoom meeting at a time (https://support.zoom.us/hc/en-us/articles/206122046-Hosting-concurrent-meetings)
+      if (!meetingData.data) await endMeeting(meetings[0].id);
+      // server meeting data and zoom meeting data does not match. this case may not come at all
+      // If true then end zoom session and clear server meeting data
+      else if (meetingData.data.id !== meetings[0].id) {
+        await endMeeting(meetings[0].id);
+        setMeetingData(null);
+      }
+    }
     // clear server meeting data if no zoom live meeting is going on
-    if (!meetings.length && meetingData.data) setMeetingData(null);
+    else if (meetingData.data) {
+      setMeetingData(null);
+    }
   }
 
   // if meeting is going on
@@ -88,8 +102,10 @@ router.get("/check-setup", async (req, res) => {
 
 router.get("/end-meeting", async (req, res) => {
   const meetingId = meetingData.data?.id;
+  // const endZoomSession = req.query.endZoomSession === "true";
+
   if (meetingId) {
-    await endMeeting(meetingId);
+    // if (endZoomSession) await endMeeting(meetingId);
     setMeetingData(null);
   }
 
