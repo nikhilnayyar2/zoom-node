@@ -3,7 +3,6 @@ import ClientView from "./ClientView";
 // import ComponentView from "./ComponentView";
 import { checkOauthSetup, joinMeeting } from "./handler";
 import { Routes, Route } from "react-router-dom";
-import ZoomMeetEnd from "./ZoomMeetEnd";
 
 const isOauthSetup = async () => {
   if (!(await checkOauthSetup())) window.location.href = `http://localhost:4000/oauth${window.location.search}`;
@@ -17,7 +16,7 @@ function App() {
 
   const joinMeet = useCallback(async (host) => {
     setMeetingData(await joinMeeting(host));
-    setHost(host)
+    setHost(host);
   }, []);
 
   useEffect(() => {
@@ -48,7 +47,6 @@ function App() {
           </div>
         }
       />
-      <Route path="end-zoom-meet" element={<ZoomMeetEnd />} />
     </Routes>
   );
 }

@@ -1,6 +1,7 @@
 import { ZoomMtg } from "@zoomus/websdk";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./ClientView.css";
+import { endMeeting } from "./handler";
 
 ZoomMtg.setZoomJSLib("https://source.zoom.us/2.7.0/lib", "/av");
 
@@ -12,7 +13,7 @@ ZoomMtg.i18n.reload("en-US");
 
 const createClient = (meetingData, host) => {
   ZoomMtg.init({
-    leaveUrl: "http://localhost:3000/end-zoom-meet?host=" + host,
+    leaveUrl: window.location.href + "#cp-end",
     success: (success) => {
       console.log("init success", success);
       ZoomMtg.join({
@@ -38,11 +39,32 @@ const createClient = (meetingData, host) => {
 };
 
 function ClientView({ meetingData, host }) {
+  const [endingMeetingServerSide, setEndingMeetingServerSide] = useState(false);
+
+  /** this effect should be called atmost twice */
   useEffect(() => {
     if (meetingData) createClient(meetingData, host);
+
+    function popstate() {
+      if (window.location.hash === "#cp-end") {
+        document.getElementById("zmmtg-root").style.display = "none";
+
+        if (host) {
+          setEndingMeetingServerSide(true);
+          endMeeting().then(() => {
+            window.location.replace("http://localhost:3000");
+          });
+        }
+      }
+    }
+    window.addEventListener("popstate", popstate);
+
+    return () => {
+      window.removeEventListener("popstate", popstate);
+    };
   }, [meetingData, host]);
 
-  return null;
+  return endingMeetingServerSide ? <div id="endingMeetingServerSide">Ending Meeting ...</div> : null;
 }
 
 export default ClientView;
