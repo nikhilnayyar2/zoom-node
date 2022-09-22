@@ -18,7 +18,7 @@ export function RedirectEndpoint() {
     const code = queryParams.get("code");
     const state = queryParams.get("state");
 
-    if (isValidHttpUrl(state)) window.location.replace(state + "&code=" + code);
+    if (isValidHttpUrl(state)) window.location.replace(state + "?code=" + code);
   }, []);
 
   return "authorizing...";
