@@ -11,6 +11,9 @@ ZoomMtg.prepareWebSDK();
 ZoomMtg.i18n.load("en-US");
 ZoomMtg.i18n.reload("en-US");
 
+const displayZoomOverlay = (/** @type {"none" | "block"} */ display) =>
+  (document.getElementById("zmmtg-root").style.display = display);
+
 const createClient = (meetingData) => {
   ZoomMtg.init({
     leaveUrl: window.location.href + "#cp-end",
@@ -53,14 +56,12 @@ function ClientView({ meetingData, host }) {
       /** */
       popstateEvtHndlr = () => {
         if (window.location.hash === "#cp-end") {
-          document.getElementById("zmmtg-root").style.display = "none";
-
+          displayZoomOverlay("none");
+          const succussCallback = () => window.location.replace("http://localhost:3000");
           if (host) {
             setEndingMeetingServerSide(true);
-            endMeeting().then(() => {
-              window.location.replace("http://localhost:3000");
-            });
-          }
+            endMeeting().then(succussCallback).catch(succussCallback);
+          } else succussCallback();
         }
       };
       window.addEventListener("popstate", popstateEvtHndlr);
@@ -104,6 +105,14 @@ function ClientView({ meetingData, host }) {
       if (observer) observer.disconnect();
     };
   }, [meetingData, host]);
+
+  /** safelty purpose. user dont see black screen */
+  useEffect(() => {
+    displayZoomOverlay("block");
+    return () => {
+      displayZoomOverlay("none");
+    };
+  }, []);
 
   return endingMeetingServerSide ? <div id="endingMeetingServerSide">Ending Meeting ...</div> : null;
 }
