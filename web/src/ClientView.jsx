@@ -11,7 +11,7 @@ ZoomMtg.prepareWebSDK();
 ZoomMtg.i18n.load("en-US");
 ZoomMtg.i18n.reload("en-US");
 
-const createClient = (meetingData, host) => {
+const createClient = (meetingData) => {
   ZoomMtg.init({
     leaveUrl: window.location.href + "#cp-end",
     success: (success) => {
@@ -43,24 +43,65 @@ function ClientView({ meetingData, host }) {
 
   /** this effect should be called atmost twice */
   useEffect(() => {
-    if (meetingData) createClient(meetingData, host);
+    let popstateEvtHndlr, /** @type {MutationObserver} */ observer;
 
-    function popstate() {
-      if (window.location.hash === "#cp-end") {
-        document.getElementById("zmmtg-root").style.display = "none";
+    /*** */
+    if (meetingData) {
+      /** */
+      createClient(meetingData);
 
-        if (host) {
-          setEndingMeetingServerSide(true);
-          endMeeting().then(() => {
-            window.location.replace("http://localhost:3000");
-          });
+      /** */
+      popstateEvtHndlr = () => {
+        if (window.location.hash === "#cp-end") {
+          document.getElementById("zmmtg-root").style.display = "none";
+
+          if (host) {
+            setEndingMeetingServerSide(true);
+            endMeeting().then(() => {
+              window.location.replace("http://localhost:3000");
+            });
+          }
         }
-      }
+      };
+      window.addEventListener("popstate", popstateEvtHndlr);
+
+      /*** */
+      ZoomMtg.inMeetingServiceListener("onUserJoin", function (data) {
+        // Select the node that will be observed for mutations
+        const targetNode = document.getElementById("wc-footer");
+
+        if (targetNode) {
+          // Options for the observer (which mutations to observe)
+          const config = { childList: true };
+          // Callback function to execute when mutations are observed
+          const callback = (mutationList) => {
+            for (const mutation of mutationList) {
+              if (mutation.type === "childList") {
+                // remove leave meeting btn for host
+                if (data.isHost) {
+                  const nodes = document.querySelectorAll('button[class *= "leave-meeting"');
+                  if (nodes.length) {
+                    for (const node of nodes.values())
+                      if (node.textContent.toLowerCase().includes("leave")) {
+                        node.parentElement.removeChild(node);
+                        break;
+                      }
+                  }
+                }
+              }
+            }
+          };
+          // Create an observer instance linked to the callback function
+          observer = new MutationObserver(callback);
+          // Start observing the target node for configured mutations
+          observer.observe(targetNode, config);
+        }
+      });
     }
-    window.addEventListener("popstate", popstate);
 
     return () => {
-      window.removeEventListener("popstate", popstate);
+      if (popstateEvtHndlr) window.removeEventListener("popstate", popstateEvtHndlr);
+      if (observer) observer.disconnect();
     };
   }, [meetingData, host]);
 
