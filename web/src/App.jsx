@@ -1,13 +1,28 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import ComponentView from "./ComponentView";
-import { checkOauthSetup, joinMeeting } from "./handler";
+import { checkOauthSetup, generateTokens, joinMeeting } from "./handler";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { RedirectEndpoint } from "./RedirectEndpoint";
 
 const ClientView = lazy(() => import("./ClientView"));
 
 const isOauthSetup = async () => {
-  if (!(await checkOauthSetup())) window.location.href = `http://localhost:4000/oauth${window.location.search}`;
-  else return true;
+  const code = new URLSearchParams(window.location.search).get("code");
+
+  if (code) {
+    if (await generateTokens(code)) return true;
+    else {
+      window.location.href = window.location.origin;
+      return false;
+    }
+  }
+
+  const data = await checkOauthSetup();
+
+  if (data) {
+    window.location.href = data + "&state=" + window.location.origin;
+    return false;
+  } else return true;
 };
 
 function App() {
@@ -16,11 +31,14 @@ function App() {
   const [host, setHost] = useState(false);
   const navigate = useNavigate(false);
 
-  const joinMeet = useCallback(async (host) => {
-    setMeetingData(await joinMeeting(host));
-    setHost(host);
-    navigate("/client");
-  }, [navigate]);
+  const joinMeet = useCallback(
+    async (host) => {
+      setMeetingData(await joinMeeting(host));
+      setHost(host);
+      navigate("/client");
+    },
+    [navigate]
+  );
 
   useEffect(() => {
     isOauthSetup().then((t) => setLoading(!t));
@@ -49,6 +67,7 @@ function App() {
             </div>
           }
         />
+        <Route path="web" element={<RedirectEndpoint />} />
         <Route path="client" element={<ClientView meetingData={meetingData} host={host} />} />
         <Route path="component" element={<ComponentView meetingData={meetingData} />} />
       </Routes>

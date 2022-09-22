@@ -18,7 +18,13 @@ export const endMeeting = async () => {
 };
 
 export const checkOauthSetup = async () => {
-  const res = await fetch("http://localhost:4000/check-setup");
+  const res = await fetch("http://localhost:4000/oauth");
+  const data = (await res.json()).data;
+  return data;
+};
+
+export const generateTokens = async (code) => {
+  const res = await fetch("http://localhost:4000/generate-tokens?code=" + code);
   const status = (await res.json()).status;
-  return status
+  return status;
 };

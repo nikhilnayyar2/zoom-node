@@ -19,6 +19,17 @@ router.get("/user", async (req, res) => {
 });
 
 router.get("/oauth", async (req, res) => {
+  if (!tokens.accessToken)
+    return sendRespStatus(
+      res,
+      false,
+      `https://zoom.us/oauth/authorize?response_type=code&redirect_uri=${redirectUri}&client_id=${clientID}&code_challenge=${challenge}&code_challenge_method=${challengeMethod}`
+    );
+
+  return sendRespStatus(res, true);
+});
+
+router.get("/generate-tokens", async (req, res) => {
   const code = req.query.code;
   // Step 1:
   // Check if the code parameter is in the url
@@ -32,15 +43,12 @@ router.get("/oauth", async (req, res) => {
     if (data) {
       // save tokens
       setTokens(data);
-      return res.redirect(redirectUri);
     }
+
+    return sendRespStatus(res, !!data);
   }
 
-  // Step 2:
-  // If no authorization code is available, redirect to Zoom OAuth to authorize
-  return res.redirect(
-    `https://zoom.us/oauth/authorize?response_type=code&redirect_uri=${redirectUri}&client_id=${clientID}&code_challenge=${challenge}&code_challenge_method=${challengeMethod}&state=classplus-web-token`
-  );
+  return sendRespStatus(res, false);
 });
 
 router.get("/create-meeting", async (req, res) => {
@@ -94,10 +102,6 @@ router.get("/create-meeting", async (req, res) => {
 router.get("/join-meeting", async (req, res) => {
   if (meetingData.data) return res.send({ ...meetingData.data, signature: meetingData.signatureRole0 });
   return sendRespStatus(res, false);
-});
-
-router.get("/check-setup", async (req, res) => {
-  return sendRespStatus(res, !!tokens.accessToken);
 });
 
 router.get("/end-meeting", async (req, res) => {
