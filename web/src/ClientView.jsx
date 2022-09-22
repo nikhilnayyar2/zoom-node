@@ -57,7 +57,7 @@ function ClientView({ meetingData, host }) {
       popstateEvtHndlr = () => {
         if (window.location.hash === "#cp-end") {
           displayZoomOverlay("none");
-          const succussCallback = () => window.location.replace("http://localhost:3000");
+          const succussCallback = () => window.location.replace(window.location.origin);
           if (host) {
             setEndingMeetingServerSide(true);
             endMeeting().then(succussCallback).catch(succussCallback);
