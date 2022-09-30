@@ -15,8 +15,25 @@ const displayZoomOverlay = (/** @type {"none" | "block"} */ display) =>
   (document.getElementById("zmmtg-root").style.display = display);
 
 const createClient = (meetingData) => {
+  ZoomMtg.inMeetingServiceListener("onUserJoin", function (data) {
+    console.log("nikhil onUserJoin", data);
+  });
+  ZoomMtg.inMeetingServiceListener("onUserLeave", function (data) {
+    console.log("nikhil onUserLeave", data);
+  });
+  ZoomMtg.inMeetingServiceListener("onUserIsInWaitingRoom", function (data) {
+    console.log("nikhil onUserIsInWaitingRoom", data);
+  });
+  ZoomMtg.inMeetingServiceListener("", function (data) {
+    console.log("nikhil onUserIsInWaitingRoom", data);
+  });
+
   ZoomMtg.init({
     leaveUrl: window.location.href + "#cp-end",
+    meetingInfo: ["topic", "host", "mn", "participant", "dc", "enctype", "report"],
+    disablePreview: true,
+    disableInvite: true,
+    debug: process.env.NODE_ENV === "development",
     success: (success) => {
       console.log("init success", success);
       ZoomMtg.join({
@@ -28,7 +45,7 @@ const createClient = (meetingData) => {
         zak: meetingData.zak,
         success: (success) => console.log("join success", success),
         error: (error) => {
-          console.log("join error", error);
+          console.log("nikhil join error", error);
           // // https://marketplace.zoom.us/docs/sdk/native-sdks/web/client-view/error-codes/
           // const { errorCode, method } = error;
           // if (method === "join") {
@@ -68,6 +85,8 @@ function ClientView({ meetingData, host }) {
 
       /*** */
       ZoomMtg.inMeetingServiceListener("onUserJoin", function (data) {
+        if (!host) return;
+
         // Select the node that will be observed for mutations
         const targetNode = document.getElementById("wc-footer");
 
