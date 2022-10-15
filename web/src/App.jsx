@@ -68,7 +68,7 @@ function App() {
           }
         />
         <Route path="web" element={<RedirectEndpoint />} />
-        <Route path="client" element={<ClientView meetingData={meetingData} host={host} />} />
+        <Route path="client" element={<ClientView meetingData={meetingData} host={host} setMeetingData={setMeetingData} />} />
         <Route path="component" element={<ComponentView meetingData={meetingData} />} />
       </Routes>
     </Suspense>

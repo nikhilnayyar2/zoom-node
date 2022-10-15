@@ -1,14 +1,14 @@
-@import url("https://source.zoom.us/2.7.0/css/bootstrap.css");
-@import url("https://source.zoom.us/2.7.0/css/react-select.css");
+@import url("https://source.zoom.us/2.8.0/css/bootstrap.css");
+@import url("https://source.zoom.us/2.8.0/css/react-select.css");
 
-#endingMeetingServerSide {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  width: 100vw;
-  justify-content: center;
-  flex-wrap: wrap;
-  background: #222;
-  color: white;
-  font-size: 24px;
+#zoomClientViewEndingMeetServerSide {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    width: 100vw;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: #222;
+    color: white;
+    font-size: 24px;
 }

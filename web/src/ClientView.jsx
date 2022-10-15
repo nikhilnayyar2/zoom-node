@@ -14,22 +14,47 @@ ZoomMtg.i18n.reload("en-US");
 const displayZoomOverlay = (/** @type {"none" | "block"} */ display) =>
   (document.getElementById("zmmtg-root").style.display = display);
 
+const zoomMeetEndUrlHash = "#cp-end";
+
+/********************************************************************** */
+
+function removeGuestLabelFromParticipantList() {
+  const listConts = document.querySelectorAll(".ReactVirtualized__Grid__innerScrollContainer");
+  listConts.forEach((listCont) => {
+    const plabel = listCont.querySelectorAll(".participants-item__name-label");
+    for (const elem2 of plabel) if (elem2.textContent.toLowerCase().includes("guest")) elem2.textContent = "";
+  });
+}
+
+function removeLeaveBtn() {
+  const nodes = document.querySelectorAll('button[class *= "leave-meeting"');
+  if (nodes.length) {
+    for (const node of nodes.values())
+      if (node.textContent.toLowerCase().includes("leave")) {
+        node.parentElement.removeChild(node);
+        break;
+      }
+  }
+}
+
+/********************************************************************** */
+
 const createClient = (meetingData) => {
-  ZoomMtg.inMeetingServiceListener("onUserJoin", function (data) {
-    console.log("nikhil onUserJoin", data);
-  });
-  ZoomMtg.inMeetingServiceListener("onUserLeave", function (data) {
-    console.log("nikhil onUserLeave", data);
-  });
-  ZoomMtg.inMeetingServiceListener("onUserIsInWaitingRoom", function (data) {
-    console.log("nikhil onUserIsInWaitingRoom", data);
-  });
-  ZoomMtg.inMeetingServiceListener("", function (data) {
-    console.log("nikhil onUserIsInWaitingRoom", data);
-  });
+  // ZoomMtg.inMeetingServiceListener("onUserJoin", function (data) {
+  //   console.log("nikhil onUserJoin", data);
+  // });
+  // ZoomMtg.inMeetingServiceListener("onUserLeave", function (data) {
+  //   console.log("nikhil onUserLeave", data);
+  // });
+  // ZoomMtg.inMeetingServiceListener("onUserIsInWaitingRoom", function (data) {
+  //   console.log("nikhil onUserIsInWaitingRoom", data);
+  // });
+  // ZoomMtg.inMeetingServiceListener("", function (data) {
+  //   console.log("nikhil onUserIsInWaitingRoom", data);
+  // });
 
   ZoomMtg.init({
-    leaveUrl: window.location.href + "#cp-end",
+    leaveUrl: window.location.href + zoomMeetEndUrlHash,
     meetingInfo: ["topic", "host", "mn", "participant", "dc", "enctype", "report"],
     disablePreview: true,
     disableInvite: true,
@@ -54,11 +79,11 @@ const createClient = (meetingData) => {
         },
       });
     },
-    error: (error) => console.log("init error", error),
+    error: (error) => console.log("nikhil init error", error),
   });
 };
 
-function ClientView({ meetingData, host }) {
+function ClientView({ meetingData, host, setMeetingData }) {
   const [endingMeetingServerSide, setEndingMeetingServerSide] = useState(false);
 
   /** this effect should be called atmost twice */
@@ -72,7 +97,7 @@ function ClientView({ meetingData, host }) {
 
       /** */
       popstateEvtHndlr = () => {
-        if (window.location.hash === "#cp-end") {
+        if (window.location.hash === zoomMeetEndUrlHash) {
           displayZoomOverlay("none");
           const succussCallback = () => window.location.replace(window.location.origin);
           if (host) {
@@ -85,36 +110,34 @@ function ClientView({ meetingData, host }) {
 
       /*** */
       ZoomMtg.inMeetingServiceListener("onUserJoin", function (data) {
-        if (!host) return;
+        // if (!host) return;
 
-        // Select the node that will be observed for mutations
-        const targetNode = document.getElementById("wc-footer");
+        const targetNode = document.getElementById("wc-content");
 
-        if (targetNode) {
-          // Options for the observer (which mutations to observe)
-          const config = { childList: true };
-          // Callback function to execute when mutations are observed
-          const callback = (mutationList) => {
+        if (targetNode && !observer) {
+          observer = new MutationObserver((mutationList) => {
             for (const mutation of mutationList) {
               if (mutation.type === "childList") {
-                // remove leave meeting btn for host
-                if (data.isHost) {
-                  const nodes = document.querySelectorAll('button[class *= "leave-meeting"');
-                  if (nodes.length) {
-                    for (const node of nodes.values())
-                      if (node.textContent.toLowerCase().includes("leave")) {
-                        node.parentElement.removeChild(node);
-                        break;
-                      }
+                mutation.addedNodes.forEach((node) => {
+                  if (node instanceof HTMLElement) {
+                    if (
+                      ["ReactVirtualized__Grid__innerScrollContainer", "participants-item-position"].some((c) =>
+                        node.classList.contains(c)
+                      ) ||
+                      node.id === "wc-container-right"
+                    )
+                      removeGuestLabelFromParticipantList();
+                    else if (meetingData.isTutor && node.classList.contains("leave-option-container")) removeLeaveBtn();
                   }
-                }
+                });
               }
             }
-          };
-          // Create an observer instance linked to the callback function
-          observer = new MutationObserver(callback);
-          // Start observing the target node for configured mutations
-          observer.observe(targetNode, config);
+          });
+
+          observer.observe(targetNode, {
+            childList: true,
+            subtree: true,
+          });
         }
       });
     }
@@ -130,10 +153,11 @@ function ClientView({ meetingData, host }) {
     displayZoomOverlay("block");
     return () => {
       displayZoomOverlay("none");
+      setMeetingData(null);
     };
-  }, []);
+  }, [setMeetingData]);
 
-  return endingMeetingServerSide ? <div id="endingMeetingServerSide">Ending Meeting ...</div> : null;
+  return endingMeetingServerSide ? <div id="zoomClientViewEndingMeetServerSide">Ending Meeting ...</div> : null;
 }
 
 export default ClientView;
