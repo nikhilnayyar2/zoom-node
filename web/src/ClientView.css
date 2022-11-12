@@ -1,5 +1,5 @@
-@import url("https://source.zoom.us/2.8.0/css/bootstrap.css");
-@import url("https://source.zoom.us/2.8.0/css/react-select.css");
+@import url("~@zoomus/websdk/dist/css/bootstrap.css");
+@import url("~@zoomus/websdk/dist/css/react-select.css");
 
 #zoomClientViewEndingMeetServerSide {
     height: 100vh;

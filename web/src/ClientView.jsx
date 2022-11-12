@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import "./ClientView.css";
 import { endMeeting } from "./handler";
 
-ZoomMtg.setZoomJSLib("https://source.zoom.us/2.7.0/lib", "/av");
+ZoomMtg.setZoomJSLib("static/zoom/lib", "/av");
 
 ZoomMtg.preLoadWasm();
 ZoomMtg.prepareWebSDK();
