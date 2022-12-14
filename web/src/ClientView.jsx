@@ -127,7 +127,7 @@ function ClientView({ meetingData, host, setMeetingData }) {
                       node.id === "wc-container-right"
                     )
                       removeGuestLabelFromParticipantList();
-                    else if (meetingData.isTutor && node.classList.contains("leave-option-container")) removeLeaveBtn();
+                    else if (host && node.classList.contains("leave-option-container")) removeLeaveBtn();
                   }
                 });
               }
