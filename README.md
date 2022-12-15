@@ -17,6 +17,9 @@ https://marketplace.zoom.us/docs/guides/build/sdk-app/
 
 
 ## setup 
+- create sdk app https://marketplace.zoom.us/docs/guides/build/sdk-app/
+- add these scopes in the scope section
+  <img width="1679" alt="image" src="https://user-images.githubusercontent.com/88129204/207804175-3417b8be-e292-44c8-a9bd-e801d01e6dcb.png">
 - `.env` file at root
   ```
   clientID=XYZ
